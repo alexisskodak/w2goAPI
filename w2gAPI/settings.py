@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 import os
 import environ
+from google.oauth2 import service_account
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,24 +41,36 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'w2gAPIdrf',
+    'corsheaders'
 ]
 
-'''
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ]
 }
-'''
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:5500",
+    "https://w2go.fr",
+    "https://prev.w2go.fr"
+]
+
+CORS_ALLOWED_HEADERS = [
+    'authorization',
 ]
 
 ROOT_URLCONF = 'w2gAPI.urls'
@@ -154,4 +167,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_ROOT = 'static'
+
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.path.join(BASE_DIR, "w2goapi-294910-f7114697ff92.json"))
+
+# Configuration for media file storing and retrieving media file from Gcloud
+DEFAULT_FILE_STORAGE = 'w2goAPI.gcloud.GoogleCloudStaticFileStorage'
+GS_PROJECT_ID = env("GS_PROJECT_ID")
+GS_BUCKET_NAME = env("GS_BUCKET_NAME")
+STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
