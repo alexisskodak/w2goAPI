@@ -123,8 +123,8 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'wtogodev',
-            'USER': 'sboi',
-            'PASSWORD': '21319597',
+            'USER': env("LOCAL_USERNAME"),
+            'PASSWORD': env("LOCAL_PASSWORD"),
             'HOST': 'localhost',
             'PORT': '',
         }
