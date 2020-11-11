@@ -68,7 +68,7 @@
             <tr>
                 <td>
                     <a href="#" class="text-info">
-                        api/gmaps-places/q?location=&keyword=&radius=
+                        api/gmaps-places/
                     </a>
                 </td>
                 <td>
@@ -80,56 +80,36 @@
                             ')
                         </li>
                         <li>keyword (optional) : <code>str</code></li>
-                        <li>radius (optional): <code>int</code>, <code>max_length = 4</code></li>
+                        <li>radius (required): <code>int</code>, <code>max_length = 4</code></li>
                     </ul>
                 </td>
             </tr>
         </table>
-        <div class="my-3">
-            <form action="{% url 'places-by-location' %}">
-                <div class="row">
-                    <div class="col-12 col-md-4">
-                        <label for="location" class="sr-only">Enter a latitude - longitude pair</label>
-                        <input type="text" class="form-control" name="location" id="location"
-                               placeholder="Enter a geolocation">
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <label for="keyword" class="sr-only">Enter a keyword</label>
-                        <input type="text" class="form-control" name="keyword" id="keyword"
-                               placeholder="Enter a keyword">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label for="radius" class="sr-only">Enter a radius</label>
-                        <input type="text" class="form-control" name="radius" id="radius" placeholder="Enter a radius">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="my-3">
-        {% if request.GET.location %}
-            <h2>Results for {{ request.GET.keyword }} near {{ request.GET.location }} within a {{ request.GET.radius }}m radius</h2>
-            <table class="table">
-                <tr>
-                    <th>Name</th>
-                    <th>Address</th>
-                    <th>Rating</th>
-                    <th>Photo</th>
-                </tr>
-                {% for p in places_details %}
-                    <tr>
-                        <td>{{ p.name }} <img src="{{ p.icon }}" alt="Icon" width="16px" height="16px"></td>
-                        <td>{{ p.formatted_address }}</td>
-                        <td>{{ p.rating }}</td>
-                        <td><img src="{{ p.photos }}" alt="" height="128px" width="128px"></td>
-                    </tr>
-                {% endfor %}
-            </table>
-            <p>{{ steps }}</p>
-        {% endif %}
+        <ul class="list-group">
+            <li class="list-group-item">
+                <p>
+                    Sample request: <code>https://w2goapi-294910.ew.r.appspot.com/?location=45.76977,4.8175567&keyword=cafe&radius=1500</code>
+                </p>
+            </li>
+            <li class="list-group-item">
+                <p>
+                    Sample response: <br>
+                    <pre>
+                        <code>
+                        0: Object
+                        {
+                            "name": "La Boîte à Café",
+                            "formatted_address": "3 Rue de l'Abbé Rozier, 69001 Lyon, France",
+                            "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/cafe-71.png",
+                            "photos": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=20wjRl5Bu5o8zEeXbw&key=API_KEY",
+                            "rating": 4.5,
+                            "types": [ "bakery", "cafe", "restaurant", … ]
+                        },
+                        </code>
+                    </pre>
+                </p>
+            </li>
+        </ul>
     </div>
 {% endblock %}
 

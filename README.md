@@ -4,7 +4,7 @@ and returns an array of objects (Places) near a
 specified location.
 Returned Places attributes are:
 
-```name```, ```formated_address```, ```icon```, ```photo```
+```name```, ```formated_address```, ```geometry```, ```icon```, ```photo```
 ```rating``` and ```types```
 
 It also handles GET, PUT, POST and DELETE requests for custom
@@ -50,7 +50,12 @@ as well as customer reviews and other third-party content.
 ```json
 {
 "name": "La Boîte à Café",
-"formatted_address": "3 Rue de l'Abbé Rozier, 69001 Lyon, France",
+"formatted_address": "78 Rue de Provence, 75009 Paris, France",
+"location": 
+  { 
+    "lat": 48.8743529, 
+    "lng": 2.3314805
+  },  
 "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/cafe-71.png",
 "photos": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=20wjRl58zEeXbw&key=API_KEY",
 "rating": 4.5,

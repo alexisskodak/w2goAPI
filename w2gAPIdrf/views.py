@@ -8,9 +8,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .models import *
 from .serializers import *
+from .utils import *
 import googlemaps
 import environ
 import json
+
+
+env = environ.Env()
+environ.Env.read_env(env_file='db.env')
+
+
+FIELDS = ['name', 'formatted_address', 'rating', 'type', 'icon', 'photo', 'geometry']
+BASE_PHOTO_URL = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference='
+API_KEY = env('API_KEY')
+GMAPS_CLIENT = googlemaps.Client(key=API_KEY)
 
 
 class ItineraryAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
@@ -61,40 +72,39 @@ class Index(generics.GenericAPIView):
         return render(request, template_name)
 
 
-env = environ.Env()
-environ.Env.read_env(env_file='db.env')
-API_KEY = env('API_KEY')
-gmaps = googlemaps.Client(key=API_KEY)
-
-
 def get_places_list(request):
     location = request.GET.get('location')
     keyword = request.GET.get('keyword')
     radius = request.GET.get('radius')
-    places_results = gmaps.places_nearby(location=location, keyword=keyword, radius=radius)
-    places = places_results['results']
-    return places
 
-
-FIELDS = ['name', 'formatted_address', 'rating', 'type', 'icon', 'photo']
-BASE_PHOTO_URL = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference='
+    if valid_location(location) and valid_keyword(keyword) and radius_in_range(radius):
+        results = GMAPS_CLIENT.places_nearby(location=location, keyword=keyword, radius=radius)
+        return results['results']
+    return
 
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_places_details(request):
+
+    if get_places_list(request) is None:
+        return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
     places_list = get_places_list(request)
-    places_details = []
+
+    steps = []
     for place in places_list:
         place_id = place['place_id']
-        details = gmaps.place(place_id=place_id, fields=FIELDS)['result']
-        details['photos'] = details['photos'][0]['photo_reference']
-        places_details.append(details)
+        places_details = GMAPS_CLIENT.place(place_id=place_id, fields=FIELDS)['result']
+        steps.append(places_details)
 
-    photo_ids = [places_details[i]['photos'] for i in range(len(places_details))]
-    photo_urls = [BASE_PHOTO_URL + f'{photo_id}&key={API_KEY}' for photo_id in photo_ids]
+    for i in range(len(steps)):
+        steps[i]['photos'] = steps[i]['photos'][0]['photo_reference'] if has_key(steps[i], 'photos') else ""
+        photo_id = steps[i]['photos']
+        steps[i]['photos'] = BASE_PHOTO_URL + f'{photo_id}&key={API_KEY}'
+        steps[i]['location'] = steps[i]['geometry']['location']
+        del steps[i]['geometry']
 
-    for i in range(len(places_details)):
-        places_details[i]['photos'] = photo_urls[i]
-    return JsonResponse(places_details, safe=False)
+    print(steps[0])
+    return JsonResponse(steps, safe=False)
