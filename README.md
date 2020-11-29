@@ -37,8 +37,15 @@ Would pass a query string like so:
 ```https://sampledomain.com/api/gmaps-places/?location=xxxx&keyword=xxxx&radius=xxxx```
 
 Required parameters are:
-- ```location```: (string). The latitude/longitude around which to retrieve place information. This must be specified as latitude,longitude.
+
 - ```radius```: (integer) Meters. Max: 9999
+
+Then, either: 
+- ```location```: (string). The latitude/longitude around which to retrieve place information. This must be specified as latitude,longitude.
+    
+or
+
+- ```address```: (string). An address.
 
 In order to get a usable response, passing a keyword parameter is recommended
 - ```keyword```: (string) A term to be matched against all content that Google 
@@ -51,13 +58,15 @@ as well as customer reviews and other third-party content.
 {
 "name": "La Boîte à Café",
 "formatted_address": "78 Rue de Provence, 75009 Paris, France",
-"location": 
-  { 
-    "lat": 48.8743529, 
-    "lng": 2.3314805
+"geometry": 
+  {
+      "location": 
+      { 
+        "lat": 48.8743529, 
+        "lng": 2.3314805
+      }
   },  
 "icon": "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/cafe-71.png",
-"photos": "https://maps.googleapis.com/maps/api/place/photo?maxwidth=20wjRl58zEeXbw&key=API_KEY",
 "rating": 4.5,
 "types": [ "bakery", "cafe", "restaurant" ]
 }
