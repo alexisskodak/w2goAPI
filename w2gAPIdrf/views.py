@@ -11,17 +11,17 @@ from .serializers import *
 from .utils import *
 import googlemaps
 import environ
-import json
+from urllib.parse import urlencode
 
 
 env = environ.Env()
 environ.Env.read_env(env_file='db.env')
 
 
-FIELDS = ['name', 'formatted_address', 'rating', 'type', 'icon', 'photo', 'geometry']
+FIELDS = ['name', 'formatted_address', 'rating', 'type', 'icon', 'geometry']
 BASE_PHOTO_URL = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=200&photoreference='
 API_KEY = env('API_KEY')
-GMAPS_CLIENT = googlemaps.Client(key=API_KEY)
+GMAPS = googlemaps.Client(key=API_KEY)
 
 
 class ItineraryAPIView(generics.GenericAPIView, mixins.ListModelMixin, mixins.CreateModelMixin):
@@ -72,13 +72,26 @@ class Index(generics.GenericAPIView):
         return render(request, template_name)
 
 
-def get_places_list(request):
-    location = request.GET.get('location')
+def get_location(request):
+    if request.method == 'GET' and 'location' in request.GET:
+        location = request.GET.get('location')
+        return location
+
+    else:
+        address = request.GET.get('address')
+        if not valid_address(address):
+            return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+        result = GMAPS.geocode(address=address)[0]['geometry']['location']
+        location = f'{result["lat"]}, {result["lng"]}'
+        return location
+
+
+def get_places(request, location):
     keyword = request.GET.get('keyword')
     radius = request.GET.get('radius')
-
     if valid_location(location) and valid_keyword(keyword) and radius_in_range(radius):
-        results = GMAPS_CLIENT.places_nearby(location=location, keyword=keyword, radius=radius)
+        results = GMAPS.places_nearby(location=location, keyword=keyword, radius=radius)
         return results['results']
     return
 
@@ -87,24 +100,12 @@ def get_places_list(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def get_places_details(request):
-
-    if get_places_list(request) is None:
+    location = get_location(request)
+    if get_places(request, location) is None:
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-    places_list = get_places_list(request)
+    steps = [GMAPS.place(place_id=p['place_id'], fields=FIELDS)['result'] for p in get_places(request, location)]
 
-    steps = []
-    for place in places_list:
-        place_id = place['place_id']
-        places_details = GMAPS_CLIENT.place(place_id=place_id, fields=FIELDS)['result']
-        steps.append(places_details)
-
-    for i in range(len(steps)):
-        steps[i]['photos'] = steps[i]['photos'][0]['photo_reference'] if has_key(steps[i], 'photos') else ""
-        photo_id = steps[i]['photos']
-        steps[i]['photos'] = BASE_PHOTO_URL + f'{photo_id}&key={API_KEY}'
-        steps[i]['location'] = steps[i]['geometry']['location']
-        del steps[i]['geometry']
-
-    print(steps[0])
     return JsonResponse(steps, safe=False)
+
+
