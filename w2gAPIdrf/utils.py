@@ -4,7 +4,11 @@ COORDINATES = re.compile(r'(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$')
 
 
 def valid_location(location):
-    return COORDINATES.match(location)
+    return False if not COORDINATES.match(location) else True
+
+
+def valid_address(address):
+    return address is not None and len(address) <= 128
 
 
 def radius_in_range(radius):

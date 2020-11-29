@@ -37,7 +37,7 @@ Would pass a query string like so:
 ```https://sampledomain.com/api/gmaps-places/?location=xxxx&keyword=xxxx&radius=xxxx```
 
 Required parameters are:
-- ```location```: (string). A latitude - longitude pair separated by a comma
+- ```location```: (string). The latitude/longitude around which to retrieve place information. This must be specified as latitude,longitude.
 - ```radius```: (integer) Meters. Max: 9999
 
 In order to get a usable response, passing a keyword parameter is recommended
